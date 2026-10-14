@@ -29,6 +29,11 @@
       "action": "read",
       "resource": "*.env",
       "effect": "deny"
+    },
+    {
+      "action": "skill",
+      "resource": "create-test-program",
+      "effect": "allow"
     }
   ]
 }
