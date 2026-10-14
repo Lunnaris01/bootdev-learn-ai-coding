@@ -84,3 +84,14 @@ def test_lexical_errors(source: str, line: int, message: str):
     assert info.value.line == line
     assert info.value.message == message
     assert str(info.value) == f"SlopLang lexical error at line {line}: {message}"
+
+
+def test_comment_newline_increments_line():
+    tokens = tokenize("— first\n— second\nslop")
+    assert tokens[0].line == 3
+    assert tokens[-1].line == 3
+    assert tokenize("— trailing comment")[0].type is TokenType.EOF
+    with pytest.raises(LexicalError) as info:
+        tokenize("— comment\n@")
+    assert info.value.line == 2
+    assert info.value.message == "unexpected character '@'"

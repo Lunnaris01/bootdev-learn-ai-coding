@@ -39,7 +39,7 @@ Prints `small slop` twice, then `big slop`.
 | `vibe`        | `if`         | Conditional                                             |
 | `nah`         | `else`       | Else branch                                             |
 | `ralph`       | `while`      | Loop while a condition is `✅`                          |
-| `hallucinate` | `print`      | Print one value, then a newline                         |
+| `hallucinate` | `print`      | Print zero or more values separated by spaces, then a newline |
 | `ship`        | `return`     | Return one value from a function                        |
 | `✨`          | `;`          | Statement terminator (required)                         |
 | `—`           | `//`         | Start a line comment                                    |
@@ -128,15 +128,17 @@ Call depth is capped at 500 nested calls. Exceeding it is a runtime error (`stac
 
 ## Built-Ins
 
-`hallucinate(value)` is the only built-in. It accepts exactly one argument, prints it followed by a newline, and returns `nil`. Numbers print as base-10 digits, strings without quotes, booleans as `✅`/`❌`, nil as `nil`, and functions as `<clanker name>`.
+`hallucinate(...)` is the only built-in. It accepts any number of arguments, prints them separated by single spaces followed by a newline, and returns `nil`. With no arguments it prints a blank line. Numbers print as base-10 digits, strings without quotes, booleans as `✅`/`❌`, nil as `nil`, and functions as `<clanker name>`.
 
 ```slop
 hallucinate(3)✨   — 3
+hallucinate(1, 2, 3)✨   — 1 2 3
+hallucinate()✨   — blank line
 ```
 
 ## Operators
 
-`+` adds numbers or concatenates strings. `-`, `*`, `/` accept only numbers; division truncates toward zero (`-7 / 2` is `-3`, not floor division's `-4`) and division by zero is a runtime error. `<`, `<=`, `>`, `>=` compare numbers. `==`, `!=` compare any values; different types are unequal, and functions are equal only to themselves. `&&` and `||` require booleans and short-circuit. Unary `-` negates a number.
+`+` adds numbers or concatenates strings. `-`, `*`, `/` accept only numbers; division truncates toward zero (`-7 / 2` is `-3`, not floor division's `-4`) and division by zero is a runtime error. `<`, `<=`, `>`, `>=` compare numbers. `==`, `!=` compare any values; different types are unequal, and functions are equal only to themselves. `&&` and `||` require booleans and short-circuit. Unary `-` negates a number; unary `!` flips a boolean (`!✅` is `❌`, `!!✅` is `✅`) and applying it to a non-boolean is a runtime error.
 
 Precedence, lowest to highest:
 
@@ -178,7 +180,7 @@ equality       -> comparison ( ( "==" | "!=" ) comparison )* ;
 comparison     -> term ( ( "<" | "<=" | ">" | ">=" ) term )* ;
 term           -> factor ( ( "+" | "-" ) factor )* ;
 factor         -> unary ( ( "*" | "/" ) unary )* ;
-unary          -> "-" unary | call ;
+unary          -> ("-" | "!") unary | call ;
 call           -> primary ( "(" arguments? ")" )* ;
 arguments      -> expression ( "," expression )* ;
 primary        -> NUMBER | STRING | "✅" | "❌"

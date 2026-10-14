@@ -73,7 +73,6 @@ class Interpreter:
                 elif else_branch is not None:
                     self.execute_block(else_branch, Environment(self.environment))
             case While(condition, body):
-                self.execute_block(body, Environment(self.environment))
                 while self.condition(condition, "ralph"):
                     self.execute_block(body, Environment(self.environment))
             case Ship(_, value_expr):
@@ -118,7 +117,7 @@ class Interpreter:
                 return self.binary(self.evaluate(left), operator, self.evaluate(right))
             case Call(callee, paren, arguments):
                 function = self.evaluate(callee)
-                values = [self.evaluate(argument) for argument in arguments]
+                values = tuple(self.evaluate(argument) for argument in arguments)
                 return self.call(function, values, paren)
             case _:
                 raise NotImplementedError(f"unknown expression {expression!r}")
@@ -131,7 +130,12 @@ class Interpreter:
                     f"operand of unary '-' must be a number, got {type_name(operand)}",
                 )
             return -operand
-        raise SlopRuntimeError(operator.line, "unary '!' is not implemented")
+        if not isinstance(operand, bool):
+            raise SlopRuntimeError(
+                operator.line,
+                f"operand of unary '!' must be a boolean, got {type_name(operand)}",
+            )
+        return not operand
 
     def logical(self, left_expr: Expr, operator: Token, right_expr: Expr) -> Value:
         left = self.evaluate(left_expr)
@@ -200,7 +204,7 @@ class Interpreter:
             f"got {type_name(left)} and {type_name(right)}",
         )
 
-    def call(self, function: Value, arguments: list[Value], paren: Token) -> Value:
+    def call(self, function: Value, arguments: tuple[Value, ...], paren: Token) -> Value:
         if isinstance(function, Builtin):
             return function.call(arguments, paren.line)
         if not isinstance(function, SlopFunction):
@@ -238,10 +242,8 @@ class Interpreter:
             self.environment = previous
             self.call_depth -= 1
 
-    def hallucinate(self, arguments: list[Value], line: int) -> Value:
-        if len(arguments) != 1:
-            raise SlopRuntimeError(line, "hallucinate expects 1 argument")
-        self.out.write(stringify(arguments[0]) + "\n")
+    def hallucinate(self, arguments: tuple[Value, ...], line: int) -> Value:
+        self.out.write(" ".join(stringify(argument) for argument in arguments) + "\n")
         return None
 
 
