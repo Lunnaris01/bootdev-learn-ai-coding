@@ -34,6 +34,7 @@ Prints `small slop` twice, then `big slop`.
 | SlopLang      | Conventional | Meaning                                                 |
 | ------------- | ------------ | ------------------------------------------------------- |
 | `slop`        | `let`        | Declare a mutable variable                              |
+| `loadbearing` | `const`      | Declare an immutable variable                           |
 | `clanker`     | `fn`         | Define a function                                       |
 | `vibe`        | `if`         | Conditional                                             |
 | `nah`         | `else`       | Else branch                                             |
@@ -71,6 +72,13 @@ No implicit conversions.
 ## Variables
 
 `slop` declares a mutable variable and requires an initializer. A scope cannot declare a name twice, but an inner block may shadow an outer name.
+
+`loadbearing` declares an immutable variable. It also requires an initializer and follows the same scoping rules as `slop`, but any reassignment is a runtime error (`cannot assign to loadbearing '<name>'`):
+
+```slop
+loadbearing LIMIT = 100✨
+LIMIT = 200✨ — runtime error: cannot assign to loadbearing 'LIMIT'
+```
 
 ```slop
 slop score = 10✨
@@ -152,7 +160,7 @@ functionDecl   -> "clanker" IDENTIFIER "(" parameters? ")" block ;
 parameters     -> IDENTIFIER ( "," IDENTIFIER )* ;
 
 declaration    -> variableDecl | statement ;
-variableDecl   -> "slop" IDENTIFIER "=" expression "✨" ;
+variableDecl   -> ("slop" | "loadbearing") IDENTIFIER "=" expression "✨" ;
 
 statement      -> assignStmt | ifStmt | loopStmt | returnStmt
                 | block | expressionStmt ;

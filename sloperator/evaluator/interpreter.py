@@ -59,9 +59,9 @@ class Interpreter:
 
     def execute(self, statement: Stmt) -> None:
         match statement:
-            case VarDecl(name, initializer, mutable):
+            case VarDecl(name, initializer, mutable, kind):
                 value = self.evaluate(initializer)
-                self.environment.declare(name.lexeme, value, mutable, name.line)
+                self.environment.declare(name.lexeme, value, mutable, name.line, kind)
             case Assign(name, _, value_expr):
                 value = self.evaluate(value_expr)
                 self.environment.assign(name.lexeme, value, name.line)
@@ -174,7 +174,10 @@ class Interpreter:
             case TokenType.STAR:
                 return left * right
             case TokenType.SLASH:
-                return left // right
+                if right == 0:
+                    raise SlopRuntimeError(operator.line, "division by zero")
+                quotient = abs(left) // abs(right)
+                return quotient if (left >= 0) == (right >= 0) else -quotient
             case TokenType.LESS:
                 return left < right
             case TokenType.LESS_EQUAL:

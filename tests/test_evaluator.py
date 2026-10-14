@@ -71,6 +71,15 @@ hallucinate(x)✨"""
     assert run(source) == "2\n"
 
 
+def test_loadbearing_follows_slop_scoping_rules():
+    assert run("loadbearing x = 41✨\nhallucinate(x + 1)✨") == "42\n"
+    assert run("loadbearing x = 1✨\n{ hallucinate(x)✨ }") == "1\n"
+    assert run("loadbearing x = 1✨\n{ slop x = 2✨\nhallucinate(x)✨ }") == "2\n"
+    assert fails("loadbearing x = 1✨\n{ x = 2✨ }") == (
+        "SlopLang runtime error at line 2: cannot assign to loadbearing 'x'"
+    )
+
+
 def test_loop_body_is_a_fresh_scope_each_iteration():
     source = """slop i = 0✨
 ralph i < 3 {

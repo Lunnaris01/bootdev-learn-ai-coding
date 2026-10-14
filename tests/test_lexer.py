@@ -47,8 +47,19 @@ def test_hallucinate_is_an_identifier_not_a_keyword():
     assert tokenize("hallucinate")[0].type is TokenType.IDENTIFIER
 
 
+def test_loadbearing_is_a_keyword():
+    assert tokenize("loadbearing")[0] == Token(TokenType.LOADBEARING, "loadbearing", None, 1)
+
+
 def test_string_may_contain_em_dash_and_opening_quote():
     assert tokenize("“x — “y”")[0].literal == "x — “y"
+
+
+def test_string_escape_sequences():
+    assert tokenize("“a\\tb”")[0].literal == "a\tb"
+    assert tokenize("“a\\nb”")[0].literal == "a\nb"
+    assert tokenize("“a\\\\b”")[0].literal == "a\\b"
+    assert tokenize("“a\\”b”")[0].literal == "a”b"
 
 
 @pytest.mark.parametrize(
